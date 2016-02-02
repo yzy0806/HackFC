@@ -1,13 +1,32 @@
-casper.options.viewportSize = {width: 1024, height: 768};
-var testCount = 2;
-casper.test.begin("Testing Reddit", testCount, function redditTest(test) {
-    casper.start("http://www.filipinocupid.com/en/mail/showinbox/?", function() {
-    	//test.assertTitleMatch(/programming/, "Title is what we'd expect");
-    	//Click "new link"
-    	//casper.click("a[href*='/programming/new/']");
-    casper.capture("../images/reddit-programming-new.png");
+var links = [];
+var casper = require('casper').create();
 
-    }).run(function() {
-        test.done();
+function getLinks() {
+    var links = document.querySelectorAll('h3.r a');
+    return Array.prototype.map.call(links, function(e) {
+        return e.getAttribute('href');
     });
+}
+
+casper.start('https://www.google.com/', function() {
+    // search for 'casperjs' from google form
+    this.fill('form[action="/search"]', { q: 'casperjs' }, true);
+});
+
+casper.then(function() {
+    // aggregate results for the 'casperjs' search
+    links = this.evaluate(getLinks);
+    // now search for 'phantomjs' by filling the form again
+    this.fill('form[action="/search"]', { q: 'phantomjs' }, true);
+});
+
+casper.then(function() {
+    // aggregate results for the 'phantomjs' search
+    links = links.concat(this.evaluate(getLinks));
+});
+
+casper.run(function() {
+    // echo results in some pretty fashion
+    this.echo(links.length + ' links found:');
+    this.echo(' - ' + links.join('\n - ')).exit();
 });

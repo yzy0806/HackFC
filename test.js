@@ -2,6 +2,7 @@ var casper = require('casper').create({
     verbose: true,
     logLevel: "info"
 });
+
 casper.options.viewportSize = {width: 1024, height: 768};
 
 casper.on("remote.message", function(message) {
@@ -14,13 +15,18 @@ casper.start('https://www.filipinocupid.com/en/auth/login?timeout&page=/en/mail/
         'Email':    'yzy0806@hotmail.com',
         'password':    'yichengsu1',
     }, true);
+
+    this.waitFor(function check() {
+        return (this.getCurrentUrl() === "http://www.filipinocupid.com/en/mail/showInbox/?");
+    });
+
     casper.then(function(){
-    	casper.evaluate(function(){
+        casper.evaluate(function(){
             console.log("Now I'm in the DOM!");
             console.log($(".subject .center-cell a[href]").length)
-            console.log(JSON.stringify($(".subject .center-cell a[href]")[0]));
+            console.log($($(".subject .center-cell a[href]")[0]).attr('href'));
         });
-    	casper.capture("../images/fc.png");
+        casper.capture("../images/fc.png");
     });
 });
 
