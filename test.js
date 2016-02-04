@@ -17,6 +17,8 @@ casper.on("remote.message", function(message) {
 });
 
 var allGirlUrls=[]
+var lastPage;
+var lastPageUrl;
 
 casper.start('https://www.filipinocupid.com/en/auth/login?timeout&page=/en/mail/showinbox/', function() {
     this.echo(this.getTitle());
@@ -30,19 +32,25 @@ casper.start('https://www.filipinocupid.com/en/auth/login?timeout&page=/en/mail/
     });
 
     this.thenOpen('http://www.filipinocupid.com/en/mail/showinbox/?orderBy=1&page=100', function() {
-        var first=this.getCurrentUrl().search('page=')+5;
-        var number=parseInt(this.getCurrentUrl().substring(first));
+        lastPageUrl=this.getCurrentUrl().search('page=')+5;
+        lastPage=parseInt(this.getCurrentUrl().substring(lastPageUrl));
         console.log("hey");
-        console.log(number);
-        console.log(first);
+        console.log(lastPage);
+        console.log(lastPageUrl);
         console.log("yo");
         casper.capture("../images/fc1.png");
     });
-});
 
-casper.then(function(){
-    allGirlUrls = this.evaluate(getLinks);
-    casper.capture("../images/fc.png");
+    casper.then(function() {
+    for(var i=lastPage;i>0;i--){
+        var url = 'http://www.filipinocupid.com/en/mail/showinbox/?orderBy=1&page='+i;
+        this.thenOpen(url);
+        this.then(function(){
+            allGirlUrls = allGirlUrls.concat(this.evaluate(getLinks));
+            this.capture("../images/fc.png");
+        });
+    }
+    });
 });
 
 casper.run(function() {
